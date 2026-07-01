@@ -5,20 +5,66 @@
     <title>Redirecting...</title>
 
     <script>
-      const oldBasePath = "/forgedjango";
-      const newBaseUrl = "https://qualcomm.github.io/forgedjango";
+      async function redirectIfMatched() {
+        try {
+          const response = await fetch("/redirects.json?ts=" + Date.now(), {
+            cache: "no-store"
+          });
 
-      const currentPath = window.location.pathname;
+          if (!response.ok) {
+            throw new Error("Unable to load redirects.json");
+          }
 
-      if (currentPath === oldBasePath || currentPath.startsWith(oldBasePath + "/")) {
-        const remainingPath = currentPath.substring(oldBasePath.length);
-        const newUrl = newBaseUrl + remainingPath + window.location.search + window.location.hash;
-        window.location.replace(newUrl);
-      } else {
+          const redirects = await response.json();
+
+          const originalPath = window.location.pathname;
+          const normalizedPath = originalPath.replace(/\/$/, "");
+
+          let matchedOldBasePath = null;
+
+          const oldBasePaths = Object.keys(redirects).sort(function (a, b) {
+            return b.length - a.length;
+          });
+
+          for (const oldBasePath of oldBasePaths) {
+            if (
+              normalizedPath === oldBasePath ||
+              normalizedPath.startsWith(oldBasePath + "/")
+            ) {
+              matchedOldBasePath = oldBasePath;
+              break;
+            }
+          }
+
+          if (matchedOldBasePath) {
+            const remainingPath = originalPath.substring(matchedOldBasePath.length);
+            const newBaseUrl = redirects[matchedOldBasePath].replace(/\/$/, "");
+            const newUrl =
+              newBaseUrl +
+              remainingPath +
+              window.location.search +
+              window.location.hash;
+
+            window.location.replace(newUrl);
+            return;
+          }
+
+          showNotFound();
+        } catch (error) {
+          showNotFound();
+        }
+      }
+
+      function showNotFound() {
         document.addEventListener("DOMContentLoaded", function () {
-          document.body.innerHTML = "<h1>404</h1><p>Page not found.</p>";
+          document.body.innerHTML = `
+            <h1>404</h1>
+            <p>Page not found.</p>
+          `;
         });
       }
+
+      redirectIfMatched();
     </script>
   </head>
   <body>
