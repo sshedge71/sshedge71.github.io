@@ -5,24 +5,52 @@
     <title>Redirecting...</title>
 
     <script>
-      const oldHost = "sshedge71.github.io";
-      const newBaseHost = "https://qualcomm.github.io";
+      (function () {
+        const migratedRepos = {
+          "forgedjango": "https://qualcomm.github.io/forgedjango",
+          "tps-location-sdk-android": "https://qualcomm.github.io/tps-location-sdk-android",
+          "aimet-pages": "https://qualcomm.github.io/aimet-pages"
+        };
 
-      const path = window.location.pathname;
-      const search = window.location.search;
-      const hash = window.location.hash;
+        const path = window.location.pathname;
+        const search = window.location.search;
+        const hash = window.location.hash;
 
-      if (window.location.hostname === oldHost && path !== "/") {
-        const newUrl = newBaseHost + path + search + hash;
-        window.location.replace(newUrl);
-      } else {
-        document.addEventListener("DOMContentLoaded", function () {
-          document.body.innerHTML = "<h1>404</h1><p>Page not found.</p>";
-        });
-      }
+        const pathParts = path.split("/").filter(Boolean);
+        const repoName = pathParts[0];
+
+        if (repoName && Object.prototype.hasOwnProperty.call(migratedRepos, repoName)) {
+          const remainingPath = path.substring(("/" + repoName).length);
+          const targetBaseUrl = migratedRepos[repoName].replace(/\/$/, "");
+          const targetUrl = targetBaseUrl + remainingPath + search + hash;
+
+          window.location.replace(targetUrl);
+        }
+      })();
     </script>
+
+    <style type="text/css" media="screen">
+      .container {
+        margin: 10px auto;
+        max-width: 600px;
+        text-align: center;
+      }
+
+      h1 {
+        margin: 30px 0;
+        font-size: 4em;
+        line-height: 1;
+        letter-spacing: -1px;
+      }
+    </style>
   </head>
+
   <body>
-    <p>Redirecting...</p>
+    <div class="container">
+      <h1>404</h1>
+
+      <p><strong>Page not found :(</strong></p>
+      <p>The requested page could not be found.</p>
+    </div>
   </body>
 </html>
